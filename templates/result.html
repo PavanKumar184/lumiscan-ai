@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LumiScan AI - Diagnostic Report</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/lumiscan.css') }}?v=20260508-ui2">
+</head>
+
+<body>
+  <div id="app" class="min-h-screen flex flex-col">
+    <header class="app-header bg-dark-secondary/70 backdrop-blur-sm text-gray-100 shadow-2xl sticky top-0 z-10 border-b border-gray-700">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+          <span class="brand-mark">
+          <svg class="w-8 h-8 text-highlight-cyan" viewBox="0 0 36 36" fill="none" stroke="#9CE6DB" stroke-width="2">
+            <path d="M18 4c-5 0-10 8-10 16v8a2 2 0 0 0 2 2h7V18l-5-5m13 0-5 5v12h7a2 2 0 0 0 2-2v-8c0-8-5-16-10-16z" fill="rgba(0,255,255,0.1)" />
+            <ellipse cx="12" cy="22" rx="2.2" ry="5" fill="rgba(0,255,255,0.15)" />
+            <ellipse cx="24" cy="22" rx="2.2" ry="5" fill="rgba(0,255,255,0.15)" />
+            <circle cx="18" cy="14" r="1.2" fill="#FACC15" />
+          </svg>
+          </span>
+          <h1 class="text-2xl font-extrabold text-white tracking-wider">LumiScan AI</h1>
+        </div>
+        <nav class="hidden md:flex space-x-6 text-sm font-semibold">
+          <a href="#" class="text-highlight-cyan border-b-2 border-highlight-cyan pb-1">Dashboard</a>
+          <a href="/" class="hover:text-highlight-cyan transition-colors">New Scan</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <section class="hero-panel">
+        <span class="eyebrow"><i data-lucide="clipboard-check" class="w-4 h-4"></i> Diagnostic report</span>
+        <div>
+          <h2 class="page-title font-extrabold text-white mb-4">Analysis Report</h2>
+          <p class="hero-copy">Review the uploaded radiograph, Grad-CAM attention map, class distribution context, and clinical explanation in one report view.</p>
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Analysis Panel -->
+        <div class="lg:col-span-2 space-y-6 panel-professional mobile-panel-pad p-8 rounded-2xl">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Original X-ray -->
+            <div class="image-panel p-4 space-y-4">
+              <h4 class="text-xl font-semibold border-b border-gray-200 pb-2">Original Image</h4>
+              <img id="xrayImage" alt="Analyzed X-Ray" class="scan-image rounded-lg shadow-xl bg-gray-100" />
+              <p class="text-sm muted-copy text-center">Uploaded Chest X-Ray</p>
+            </div>
+
+            <!-- Grad-CAM Visualization -->
+            <div class="image-panel p-4 space-y-4">
+              <h4 class="text-xl font-semibold border-b border-gray-200 pb-2">AI Heatmap</h4>
+              <img id="gradcamImage" alt="Grad-CAM Heatmap" class="scan-image rounded-lg shadow-xl bg-gray-100" />
+              <p class="text-sm muted-copy text-center">Highlighted regions of attention</p>
+            </div>
+          </div>
+
+          <!-- Prediction Summary -->
+          <div class="mt-8 space-y-6">
+            <h4 class="section-heading text-xl font-semibold">Primary Diagnosis</h4>
+            <div class="diagnosis-card p-5">
+              <span class="report-chip mb-3"><i data-lucide="activity" class="w-4 h-4"></i> Highest-confidence finding</span>
+              <p class="text-2xl font-extrabold" id="primaryResult"></p>
+              <p class="muted-copy text-sm mt-2">Highest-confidence finding identified by the model.</p>
+            </div>
+          </div>
+
+          <!-- Explanation -->
+          <div class="mt-8 pt-6 border-t border-gray-200">
+            <h4 class="text-xl font-semibold mb-3">Clinical Summary & Explanation</h4>
+            <div id="explanationBox" class="image-panel p-4 rounded-lg text-base overflow-auto max-h-44"></div>
+            <p class="mt-4 text-xs italic muted-copy">Disclaimer: AI insights are supportive; clinical confirmation is required.</p>
+          </div>
+
+          <!-- Class Imbalance Info -->
+          <div class="metric-panel imbalance-box mt-8 p-6 text-slate-900">
+            <h3 class="text-xl font-semibold mb-3 flex items-center space-x-2">
+              <i data-lucide="bar-chart-3" class="w-5 h-5 text-highlight-cyan"></i>
+              <span>Dataset Class Distribution</span>
+            </h3>
+            <p><strong>Predicted Class:</strong> {{ result.prediction_result }}</p>
+            <p><strong>Samples in Dataset:</strong> {{ result.imbalance_info.class_samples }}</p>
+            <p><strong>Average per Class:</strong> {{ result.imbalance_info.average_per_class }}</p>
+            <p><strong>Status:</strong>
+              <span class="{% if 'Minor' in result.imbalance_info.imbalance_status %}text-red-400{% else %}text-green-400{% endif %}">
+                {{ result.imbalance_info.imbalance_status }}
+              </span>
+            </p>
+          </div>
+
+          <!-- Button -->
+          <div class="flex justify-start mt-6">
+            <button onclick="stopAndGoHome()" class="mobile-full-button flex items-center space-x-2 py-3 px-8 rounded-full shadow-lg font-bold">
+              <i data-lucide="scan" class="w-5 h-5"></i>
+              <span>Start New Scan</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Quick Links -->
+        <div class="lg:col-span-1 panel-professional mobile-panel-pad text-white p-8 rounded-2xl h-fit border border-gray-700 space-y-6">
+          <h3 class="section-heading text-2xl font-bold mb-6">Quick Links</h3>
+          <div class="space-y-4">
+            <a href="https://radiologyassistant.nl/chest/chest-x-ray/lung-disease" target="_blank" class="quick-link block p-4 rounded-xl">
+              <div class="flex items-center space-x-4">
+                <i data-lucide="scan" class="w-6 h-6 text-highlight-cyan"></i>
+                <span class="text-lg font-medium">Chest X-Ray Library</span>
+              </div>
+            </a>
+            <a href="https://www.kenhub.com/en/library/anatomy/normal-chest-x-ray" target="_blank" class="quick-link block p-4 rounded-xl">
+              <div class="flex items-center space-x-4">
+                <i data-lucide="file-text" class="w-6 h-6 text-highlight-cyan"></i>
+                <span class="text-lg font-medium">X-Ray Learning Hub</span>
+              </div>
+            </a>
+            <a href="https://cadabamsdiagnostics.com/bangalore/xray-scan/chest-x-ray" target="_blank" class="quick-link block p-4 rounded-xl">
+              <div class="flex items-center space-x-4">
+                <i data-lucide="stethoscope" class="w-6 h-6 text-highlight-cyan"></i>
+                <span class="text-lg font-medium">Connect with Specialist</span>
+              </div>
+            </a>
+            <a href="https://www.physio-pedia.com/Chest_X-Rays" target="_blank" class="quick-link block p-4 rounded-xl">
+              <div class="flex items-center space-x-4">
+                <i data-lucide="activity-square" class="w-6 h-6 text-highlight-cyan"></i>
+                <span class="text-lg font-medium">Treatment Pathways</span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="app-footer bg-dark-secondary/70 backdrop-blur-sm text-gray-400 text-center py-4 text-sm mt-auto border-t border-gray-700">
+      <div class="container mx-auto">
+        <p class="mb-1">&copy; 2025 LumiScan AI. High-Confidence Medical Intelligence.</p>
+        <p class="space-x-4"><a href="#" class="hover:text-highlight-cyan">Regulatory Compliance</a> | <a href="#" class="hover:text-highlight-cyan">Terms of Use</a> | <a href="#" class="hover:text-highlight-cyan">System Status</a></p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const result = {{ result | tojson | safe }};
+
+    if (result && result.image_url) {
+      document.getElementById('xrayImage').src = result.image_url;
+      document.getElementById('gradcamImage').src = result.gradcam_url;
+      document.getElementById('primaryResult').textContent = result.prediction_result;
+      document.getElementById('explanationBox').textContent = result.explanation_text.replace(/\*\*/g, '');
+
+      // Optional voice output
+      if ('speechSynthesis' in window) {
+        const message = `Analysis complete. The detected condition is ${result.prediction_result}. ${result.explanation_text}`;
+        const utter = new SpeechSynthesisUtterance(message);
+        utter.lang = 'en-US';
+        utter.rate = 1.0;
+        speechSynthesis.speak(utter);
+      }
+    } else {
+      console.error("Invalid or missing result object from Flask.");
+    }
+
+    function stopAndGoHome() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

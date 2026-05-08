@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+
+# Local ML/runtime caches
+.torch/
+.torchxrayvision/
+models/
+
+# Logs and local server output
+*.log
+flask_*runtime.log
+
+# Generated app artifacts
+static/uploads/*
+!static/uploads/.gitkeep
+static/gradcam/*
+!static/gradcam/.gitkeep
+static/reports/*
+!static/reports/.gitkeep
+uploads/
+checkpoints/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

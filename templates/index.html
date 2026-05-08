@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LumiScan AI - Radiologist Assistant</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lumiscan.css') }}?v=20260508-ui2">
+</head>
+<body class="font-outfit min-h-screen text-gray-100">
+<div id="app" class="min-h-screen flex flex-col">
+<header class="app-header bg-dark-secondary/70 backdrop-blur-sm text-gray-100 shadow-2xl sticky top-0 z-10 border-b border-gray-700">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+<div class="flex items-center space-x-3">
+    <span class="brand-mark">
+    <!-- Lungs SVG logo -->
+    <svg class="w-8 h-8 text-highlight-cyan" viewBox="0 0 36 36" fill="none" stroke="#9CE6DB" stroke-width="2">
+      <path d="M18 4c-5 0-10 8-10 16v8a2 2 0 0 0 2 2h7V18l-5-5m13 0-5 5v12h7a2 2 0 0 0 2-2v-8c0-8-5-16-10-16z" fill="rgba(0,255,255,0.1)" />
+      <ellipse cx="12" cy="22" rx="2.2" ry="5" fill="rgba(0,255,255,0.15)" />
+      <ellipse cx="24" cy="22" rx="2.2" ry="5" fill="rgba(0,255,255,0.15)" />
+      <circle cx="18" cy="14" r="1.2" fill="#FACC15" />
+    </svg>
+    </span>
+    <h1 class="text-2xl font-extrabold text-white tracking-wider">LumiScan AI</h1>
+</div>
+<nav class="hidden md:flex space-x-6 text-sm font-semibold">
+<a href="#" class="text-highlight-cyan border-b-2 border-highlight-cyan pb-1">Dashboard</a>
+<a href="#" class="hover:text-highlight-cyan transition-colors">New Scan</a>
+<a href="#" class="hover:text-highlight-cyan transition-colors">Reports</a>
+</nav>
+</div>
+</header>
+<main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+<section class="hero-panel">
+    <span class="eyebrow"><i data-lucide="shield-check" class="w-4 h-4"></i> AI diagnostic workspace</span>
+    <div>
+        <h2 class="page-title font-extrabold text-white mb-4">Chest X-ray review, explained clearly.</h2>
+        <p class="hero-copy">Upload a radiograph, review the model's primary finding, and inspect the highlighted attention region in a focused clinical interface.</p>
+    </div>
+    <div class="stat-strip">
+        <div class="stat-pill"><strong>14</strong><span>Thoracic classes</span></div>
+        <div class="stat-pill"><strong>Grad-CAM</strong><span>Visual explanation</span></div>
+        <div class="stat-pill"><strong>NIH</strong><span>Training dataset</span></div>
+    </div>
+</section>
+<div id="notification-message" class="hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl flex items-center shadow-2xl transition-all duration-300 min-w-80" role="alert">
+<i id="notification-icon" data-lucide="alert-triangle" class="w-5 h-5 mr-3 flex-shrink-0"></i>
+<p id="notification-text" class="font-medium text-sm"></p>
+<button type="button" onclick="hideNotification()" class="ml-auto p-1 rounded-full hover:bg-opacity-20 transition-all">
+<i data-lucide="x" class="w-5 h-5"></i>
+</button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2 panel-professional mobile-panel-pad p-8 rounded-2xl space-y-8">
+        <h3 class="section-heading text-2xl font-bold flex items-center space-x-2">
+            <i data-lucide="microscope" class="w-5 h-5 text-amber-400"></i>
+            <span>Diagnostic Workflow</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="workflow-card bg-panel-blue/20 text-white p-6 rounded-xl shadow-lg flex flex-col items-start space-y-4">
+                <h3 class="text-xl font-semibold flex items-center space-x-2"><i data-lucide="activity" class="w-5 h-5"></i><span>Immediate Scan</span></h3>
+                <p class="muted-copy text-sm opacity-90">Upload a PNG or JPG image and start model inference from the same workspace.</p>
+                <button type="button" onclick="document.getElementById('fileInput').click()" class="mobile-full-button mt-2 flex items-center space-x-2 bg-amber-400 text-slate-900 font-bold py-2 px-6 rounded-full">
+                    <i data-lucide="upload" class="w-4 h-4"></i><span>Upload X-ray</span>
+                </button>
+            </div>
+            <!-- CORRECTED PANEL: Changed <a> back to <button> and updated onclick handler -->
+            <div class="workflow-card bg-panel-green/20 text-white p-6 rounded-xl shadow-lg flex flex-col items-start space-y-4">
+                <h3 class="text-xl font-semibold flex items-center space-x-2"><i data-lucide="folder-open" class="w-5 h-5"></i><span>View Model Classes</span></h3>
+                <p class="muted-copy text-sm opacity-90">Explore the conditions recognized by the classifier before reviewing a case.</p>
+                <button type="button" onclick="loadClassesPage()" class="mobile-full-button mt-2 flex items-center space-x-2 bg-amber-400 text-slate-900 font-bold py-2 px-6 rounded-full">
+                    <i data-lucide="eye" class="w-4 h-4"></i><span>View Records</span>
+                </button>
+            </div>
+            <!-- END CORRECTED PANEL -->
+        </div>
+        <div id="aiStatusBox" class="bg-dark-secondary/50 p-6 rounded-xl shadow-inner border border-highlight-cyan/50 min-h-[100px] flex items-center mt-6">
+            <div id="aiStatusContent" class="mobile-stack flex items-center gap-4 w-full">
+                <i id="aiStatusIcon" data-lucide="star" class="w-8 h-8 text-highlight-cyan flex-shrink-0"></i>
+                <p id="aiStatusText" class="text-lg font-medium text-gray-200 flex-grow"></p>
+                <button id="speakButton" type="button" class="p-2 rounded-full bg-highlight-cyan/10 hover:bg-highlight-cyan/30 text-highlight-cyan focus:outline-none" aria-label="Repeat status message">
+                    <i data-lucide="volume-2" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+        <div id="resultsPanel" class="hidden panel-professional p-6 md:p-8 rounded-xl border border-highlight-cyan mt-6">
+            <h3 class="section-heading text-2xl font-bold text-highlight-cyan mb-6 flex items-center space-x-3">
+                <i data-lucide="clipboard-check" class="w-6 h-6"></i>
+                <span>AI Diagnostic Report</span>
+            </h3>
+            <p class="text-gray-400">The detailed, high-confidence report will be displayed here.</p>
+        </div>
+    </div>
+    <div class="lg:col-span-1 panel-professional mobile-panel-pad text-white p-8 rounded-2xl h-fit border border-gray-700 space-y-6">
+        <h3 class="section-heading text-2xl font-bold mb-6 flex items-center space-x-2">
+            <i data-lucide="link" class="w-5 h-5 text-highlight-cyan"></i>
+            <span>Quick Links</span>
+        </h3>
+        <div class="space-y-4">
+            <a href="https://radiologyassistant.nl/chest/chest-x-ray/lung-disease" target="_blank"
+               class="quick-link block bg-white text-gray-800 p-5 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all border-l-4 border-highlight-cyan group transform hover:scale-105 hover:border-cyan-400">
+                <div class="flex items-center space-x-4">
+                    <i data-lucide="scan-line" class="w-6 h-6 text-highlight-cyan group-hover:scale-110 transition-transform"></i>
+                    <span class="text-base font-medium">Chest X-Ray Library</span>
+                </div>
+            </a>
+            <a href="https://www.kenhub.com/en/library/anatomy/normal-chest-x-ray" target="_blank"
+               class="quick-link block bg-white text-gray-800 p-5 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all border-l-4 border-panel-blue group transform hover:scale-105 hover:border-blue-500">
+                <div class="flex items-center space-x-4">
+                    <i data-lucide="book-open-text" class="w-6 h-6 text-panel-blue group-hover:scale-110 transition-transform"></i>
+                    <span class="text-base font-medium">X-Ray Learning Hub</span>
+                </div>
+            </a>
+            <a href="https://cadabamsdiagnostics.com/bangalore/xray-scan/chest-x-ray" target="_blank"
+               class="quick-link block bg-white text-gray-800 p-5 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all border-l-4 border-panel-green group transform hover:scale-105 hover:border-green-400">
+                <div class="flex items-center space-x-4">
+                    <i data-lucide="user-plus" class="w-6 h-6 text-panel-green group-hover:scale-110 transition-transform"></i>
+                    <span class="text-base font-medium">Connect with Specialist</span>
+                </div>
+            </a>
+            <a href="https://www.physio-pedia.com/Chest_X-Rays" target="_blank"
+               class="quick-link block bg-white text-gray-800 p-5 rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all border-l-4 border-amber-400 group transform hover:scale-105 hover:border-yellow-400">
+                <div class="flex items-center space-x-4">
+                    <i data-lucide="activity" class="w-6 h-6 text-amber-400 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-base font-medium">Treatment Pathways</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- X-ray Submission Standalone -->
+<div class="upload-card panel-professional mobile-panel-pad rounded-2xl p-8 mx-auto border border-gray-700 space-y-6">
+    <h3 class="section-heading text-2xl font-bold mb-6 flex items-center space-x-2">
+        <i data-lucide="file-up" class="w-5 h-5 text-highlight-cyan"></i>
+        <span>X-ray Submission</span>
+    </h3>
+    <form id="analysisForm" class="space-y-6" enctype="multipart/form-data" autocomplete="off" action="/predict" method="POST">
+        <input type="file" id="fileInput" name="file" accept="image/*" class="hidden" required>
+        <div id="previewContainer" class="hidden bg-gray-800 rounded-lg overflow-hidden border-2 border-dashed border-gray-600 shadow-inner">
+            <div class="h-64 flex items-center justify-center p-4">
+                <div id="placeholderGraphic" class="flex flex-col items-center text-gray-500">
+                     <i data-lucide="scan" class="w-16 h-16 mb-2"></i>
+                     <p class="text-sm muted-copy">Image Preview</p>
+                </div>
+                <img id="imagePreview" class="max-h-full max-w-full object-contain rounded-lg hidden" alt="X-ray Preview Image">
+            </div>
+        </div>
+        <div id="dropZone" class="border-4 border-dashed border-gray-700 rounded-lg p-8 text-center transition-all cursor-pointer hover:border-highlight-cyan/70 hover:bg-gray-800/20"
+        ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+        ondrop="handleFileDrop(event)" onclick="document.getElementById('fileInput').click()">
+            <i data-lucide="cloud-upload" class="w-10 h-10 mx-auto text-highlight-cyan mb-3 opacity-80"></i>
+            <p id="dropZoneText" class="text-lg font-medium text-gray-200">Drag and drop a chest X-ray image</p>
+            <p class="text-sm text-gray-400 mt-1">or Click to Browse (PNG, JPG, JPEG)</p>
+            <p id="fileNameDisplay" class="text-sm text-amber-400 font-semibold mt-3"></p>
+        </div>
+        <div class="flex justify-center pt-2">
+            <button type="submit" id="analyzeButton" disabled class="mobile-full-button bg-highlight-cyan text-slate-900 font-extrabold text-lg py-3 px-12 rounded-full flex items-center justify-center space-x-2">
+                <span id="button-text">Start Analysis</span>
+                <span id="loadingIndicator" class="spinner hidden" aria-hidden="true"></span>
+            </button>
+        </div>
+    </form>
+</div>
+</main>
+<div id="analysisOverlay" class="analysis-overlay" hidden role="status" aria-live="polite">
+    <div class="analysis-dialog text-center">
+        <div class="mx-auto mb-4 spinner" aria-hidden="true"></div>
+        <h3 class="text-xl font-bold mb-2">Analyzing X-ray</h3>
+        <p class="text-sm mb-5">Generating model prediction and Grad-CAM heatmap.</p>
+        <div class="progress-track" aria-hidden="true">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+</div>
+<footer class="app-footer bg-dark-secondary/70 backdrop-blur-sm text-gray-400 text-center py-4 text-sm mt-auto border-t border-gray-700">
+<div class="container mx-auto">
+<p class="mb-1">&copy; 2025 LumiScan AI. High-Confidence Medical Intelligence.</p>
+<p class="space-x-4"><a href="#" class="hover:text-highlight-cyan">Regulatory Compliance</a> | <a href="#" class="hover:text-highlight-cyan">Terms of Use</a> | <a href="#" class="hover:text-highlight-cyan">System Status</a></p>
+</div>
+</footer>
+</div>
+<script type="module">
+// AI Status voice/text logic
+const aiStatusBox = document.getElementById('aiStatusBox');
+const aiStatusText = document.getElementById('aiStatusText');
+const aiStatusIcon = document.getElementById('aiStatusIcon');
+const speakButton = document.getElementById('speakButton');
+let lastSpokenText = "";
+function speak(text) {
+    try {
+        if ('speechSynthesis' in window) {
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.08;
+            utter.pitch = 0.98;
+            utter.lang = "en-US";
+            window.speechSynthesis.speak(utter);
+        }
+    } catch(err) {}
+    lastSpokenText = text;
+}
+function updateAiStatus(state, customText="") {
+    let text = customText;
+    let icon = "star";
+    switch(state) {
+        case "WELCOME": text = "Welcome to LumiScan AI. Please upload an X-ray image for diagnostic analysis."; icon = "star"; break;
+        case "UPLOAD": text = "Image uploaded successfully. Ready to analyze."; icon = "check-circle"; break;
+        case "READY": text = "Image loaded. Click Start Analysis for AI evaluation."; icon = "check-circle"; break;
+        case "ANALYZING": text = "Analyzing X-ray image, please wait..."; icon = "microscope"; break;
+        case "ERROR": text = "Diagnostic error. Please check the image and try again."; icon = "alert-triangle"; break;
+        case "SUCCESS": text = customText || "Analysis complete."; icon = "check-check"; break;
+    }
+    aiStatusText.textContent = text;
+    aiStatusIcon.setAttribute("data-lucide", icon);
+    window.lucide && lucide.createIcons();
+    speak(text);
+}
+speakButton.onclick = () => { if(lastSpokenText) speak(lastSpokenText); };
+window.onload = () => { updateAiStatus("WELCOME"); };
+
+// --- File upload preview + enable logic ---
+const fileInput = document.getElementById('fileInput');
+const analyzeButton = document.getElementById('analyzeButton');
+const buttonText = document.getElementById('button-text');
+const loadingIndicator = document.getElementById('loadingIndicator');
+const fileNameDisplay = document.getElementById('fileNameDisplay');
+const previewContainer = document.getElementById('previewContainer');
+const imagePreview = document.getElementById('imagePreview');
+const placeholderGraphic = document.getElementById('placeholderGraphic');
+let selectedFile = null;
+
+// Show spinner on form submit and change button text
+const analysisForm = document.getElementById('analysisForm');
+analysisForm.addEventListener('submit', (e) => {
+    loadingIndicator.classList.remove('hidden');
+    buttonText.textContent = 'Analyzing...';
+    analyzeButton.disabled = true;
+    analysisForm.setAttribute('aria-busy', 'true');
+    document.getElementById('analysisOverlay').hidden = false;
+    updateAiStatus("ANALYZING");
+});
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        setFile(e.target.files[0]);
+    } else {
+        clearPreview();
+    }
+});
+
+window.handleDragOver = function(e) { e.preventDefault(); };
+window.handleDragLeave = function(e) { e.preventDefault(); };
+window.handleFileDrop = function(e) {
+    e.preventDefault();
+    if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        setFile(e.dataTransfer.files[0]);
+    }
+};
+
+function setFile(file) {
+    const allowed = ["png","jpg","jpeg"];
+    const ext = file.name?.split('.').pop().toLowerCase();
+    if (file && file.type.startsWith('image/') && allowed.includes(ext)) {
+        selectedFile = file;
+        fileNameDisplay.textContent = "File Selected: " + file.name;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagePreview.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+            imagePreview.classList.remove('hidden');
+            placeholderGraphic.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+
+        analyzeButton.disabled = false;
+        updateAiStatus("UPLOAD");
+    } else {
+        clearPreview();
+        updateAiStatus("ERROR", "Invalid file type. Please select a PNG, JPG, or JPEG image.");
+    }
+}
+
+function clearPreview() {
+    selectedFile = null;
+    fileNameDisplay.textContent = "";
+    previewContainer.classList.add('hidden');
+    imagePreview.classList.add('hidden');
+    placeholderGraphic.classList.remove('hidden');
+    analyzeButton.disabled = true;
+}
+
+// Function to handle navigation to the Flask /classes route
+window.loadClassesPage = function() {
+    // Redirects to the Flask route defined as @app.route('/classes')
+    window.location.href = "/classes";
+};
+</script>
+</body>
+</html>

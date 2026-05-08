@@ -1,0 +1,262 @@
+Software Requirements Specification (SRS)
+Scope
+The Vision-Language Assisted DR-Ultra Framework is an intelligent clinical decision-support system designed to analyze chest radiographs in combination with associated clinical text for accurate detection of multiple thoracic diseases. The system leverages a vision encoder to extract features from chest X-ray images and a language encoder to process clinical descriptions, enabling cross-modal understanding for improved diagnostic performance.
+The framework specifically addresses the challenge of imbalanced medical datasets by incorporating distributionally robust long-tailed learning techniques , ensuring better detection of rare and underrepresented diseases. Additionally, the system integrates uncertainty calibration mechanisms to generate reliable, confidence-aware predictions that are more suitable for real-world clinical usage.
+The system performs preprocessing, feature extraction, cross-modal alignment, and multi-label classification to output disease probabilities along with confidence scores. Evaluation is conducted using clinically relevant and imbalance-aware metrics such as precision, recall, F1-score, AUC, and calibration error , rather than relying solely on accuracy.
+Overall Description
+Product Functions (high level)
+The system will provide the following core functions:
+Chest X-ray Image Processing:
+Accept chest radiographs as input and perform preprocessing steps such as normalization, resizing, and noise reduction.
+Clinical Text Processing:
+Analyze associated clinical notes or textual descriptions using a language encoder to extract meaningful medical context.
+Vision–Language Feature Fusion:
+Integrate image and text features through cross-modal alignment to enhance diagnostic understanding and improve prediction accuracy.
+Multi-label Thoracic Disease Detection:
+Predict the presence of multiple thoracic diseases simultaneously with probability scores for each condition.
+Imbalance-aware Learning Mechanism:
+Apply distributionally robust and long-tailed learning techniques to improve detection performance for rare and underrepresented diseases.
+Uncertainty-aware Prediction:
+Generate confidence scores and calibrated probabilities to provide reliable and
+interpretable clinical predictions.
+Evaluation and Performance Analysis:
+Evaluate model performance using clinically relevant metrics such as precision, recall, F1-score, AUC, and Expected Calibration Error (ECE).
+Data Handling and Augmentation:
+Support imbalance-aware data augmentation and sampling strategies to improve model generalization.
+Model Deployment Interface:
+Provide an interface (local or web-based) for users to upload X-ray images and receive predictions with confidence levels.
+System Monitoring and Logging:
+Maintain logs of predictions, model performance, and system behavior for analysis and improvement
+2.2 User Characteristics
+Primary Users:
+Healthcare professionals such as radiologists, clinicians, and medical practitioners who use the system to assist in diagnosing thoracic diseases from chest X-rays. Users are expected to have basic familiarity with medical imaging systems but not necessarily expertise in AI models.
+Secondary Users:
+Medical researchers, students, and data analysts who may use the system for research, training, and performance evaluation purposes. They may have moderate technical knowledge of machine learning and medical datasets.
+Administrator/Developer:
+Project team members responsible for model development, system deployment, dataset management, and performance monitoring. They are expected to have strong technical proficiency in Python, deep learning frameworks (PyTorch/TensorFlow), and familiarity with data preprocessing, model tuning, and backend systems.
+2.3. Constraints
+Computational Resources:
+Model training requires high-performance hardware (GPU-enabled systems), while deployment environments may have limited computational capacity, requiring optimized model size and inference time.
+Dataset Limitations:
+Availability of labeled chest X-ray datasets with corresponding clinical text may be limited, and datasets are inherently imbalanced, affecting model training and evaluation.
+Data Privacy and Security:
+Medical data must be handled securely, ensuring compliance with data protection standards. Patient-sensitive information should be anonymized and not exposed.
+Model Complexity:
+Integration of vision and language models increases system complexity, requiring
+careful design to maintain efficiency and scalability.
+Evaluation Constraints:
+Traditional accuracy metrics are insufficient; the system must rely on clinically relevant and imbalance-aware metrics, which may be more complex to compute and interpret.
+Deployment Constraints:
+Real-time deployment in clinical settings may be limited due to infrastructure, requiring the system to function primarily as a decision-support tool rather than a fully automated diagnostic system.
+Regulatory Considerations:
+The system is intended for research and assistance purposes only and should not be considered a certified medical diagnostic tool without proper regulatory approvals.
+2.4. Assumptions and Dependencies
+Availability of Medical Datasets:
+It is assumed that publicly available chest X-ray datasets (e.g., NIH ChestX- ray14, CheXpert, or similar) along with corresponding clinical text or labels are accessible for training and evaluation.
+Computational Resources:
+Model training assumes access to GPU-enabled systems or cloud-based platforms for efficient deep learning model development.
+Software Frameworks:
+The system depends on libraries and frameworks such as Python, PyTorch/TensorFlow, OpenCV, NumPy, Pandas, Matplotlib, and Transformers for implementing vision–language models.
+Pretrained Models:
+The framework may rely on pretrained vision and language models (e.g., CNNs, Vision Transformers, BERT-based models) for transfer learning and improved performance.
+Data Preprocessing Tools:
+Availability of tools and libraries for image preprocessing, data augmentation, and imbalance-aware sampling techniques is assumed.
+Evaluation Tools:
+The system depends on standard evaluation libraries for computing metrics such as precision, recall, F1-score, AUC, and calibration metrics (ECE, reliability diagrams).
+User Accessibility:
+It is assumed that users (clinicians/researchers) have access to a computer system or interface capable of uploading chest X-ray images and viewing model predictions.
+Deployment Environment:
+The system may be deployed locally or on a cloud/server-based platform, depending on resource availability and usage requirements.
+Specific Requirements
+Functional Requirements (FR)
+Each requirement given an ID for traceability.
+FR-01: User Input Handling
+The system shall allow users to upload chest X-ray images and optionally provide associated clinical text.
+Inputs: Chest X-ray image, clinical notes (optional).
+Outputs: Validated input data for processing.
+939800 216089
+FR-02: Data Preprocessing
+The system shall preprocess input data by performing image normalization, resizing, and text cleaning before feeding it into the model.
+Precondition: Valid input data must be provided.
+939800 213483
+FR-03: Vision Feature Extraction
+The system shall extract meaningful features from chest X-ray images using a vision encoder (e.g., CNN/ViT).
+939800 278222
+FR-04: Clinical Text Processing
+The system shall process clinical text using a language encoder to extract contextual medical information.
+939800 271237
+FR-05: Vision–Language Fusion
+The system shall integrate image and text features using cross-modal alignment techniques to improve diagnostic accuracy.
+939800 277591
+FR-06: Multi-label Disease Prediction
+The system shall predict multiple thoracic diseases simultaneously and assign probability scores to each disease class.
+Outputs: List of predicted diseases with probabilities.
+939800 221081
+FR-07: Imbalance-aware Learning
+The system shall incorporate long-tailed and distributionally robust learning techniques during training to improve detection of rare diseases.
+939800 272511
+FR-08: Uncertainty Estimation
+The system shall compute confidence scores and calibrated probabilities for each prediction to ensure reliability.
+939800 278857
+FR-09: Result Visualization
+The system shall display predicted diseases along with probability scores and confidence levels in a user-friendly interface.
+939800 272507
+FR-10: Performance Evaluation
+The system shall evaluate model performance using metrics such as precision, recall, F1-score, AUC, and Expected Calibration Error (ECE).
+939800 278226
+FR-11: Data Augmentation Support
+The system shall support imbalance-aware data augmentation and sampling strategies during training.
+939800 271869
+FR-12: Model Deployment Interface
+The system shall provide an interface (local/web-based) for users to interact with the model and obtain predictions.
+939800 279479
+FR-13: Logging and Monitoring
+The system shall maintain logs of inputs, predictions, and system performance for analysis and debugging.
+939800 272504
+FR-14: Secure Data Handling
+The system shall ensure secure handling and storage of medical data, maintaining confidentiality and privacy.
+939800 278854
+Non-Functional Requirements
+Performance
+NFR-01: The system should generate disease predictions within an acceptable response time after receiving input (chest X-ray and clinical text).
+NFR-02: Model inference and result visualization should occur without noticeable delay for the user.
+1168400 285995
+Reliability
+NFR-03: The system should provide consistent predictions across similar inputs and maintain stability during repeated usage.
+NFR-04: The system should minimize false positives and false negatives, especially for rare disease classes, through robust learning techniques.
+1396999 128578
+Usability
+NFR-05: The user interface should be simple and intuitive for clinicians and researchers to upload data and view results.
+NFR-06: The system should clearly present predictions along with confidence scores for easy interpretation.
+1396999 281353
+Security &amp; Privacy
+NFR-07: Patient data (images and clinical text) must be securely stored and protected from unauthorized access.
+NFR-08: The system should ensure anonymization of sensitive medical data wherever applicable.
+1396999 284061
+Availability
+NFR-09: The system should be available for use in both local and cloud- based environments, depending on deployment configuration.
+1396999 279534
+Maintainability
+NFR-10: The system should be modular to allow easy updates to models, datasets, and evaluation techniques.
+1396999 284607
+Scalability
+NFR-11: The system should be able to handle increasing dataset sizes and support future expansion with additional disease classes or modalities.
+1396999 276847
+Compatibility
+NFR-12: The system should be compatible with standard operating systems
+(Windows/Linux/Mac) and support commonly used deep learning frameworks (PyTorch/TensorFlow).
+1396999 278183
+3.3 External Interface Requirements.
+User Interface
+Web/Desktop Interface: A user-friendly interface that enables clinicians and researchers to upload chest X-ray images, input or view associated clinical text, and view predicted thoracic diseases along with probability scores, confidence levels, and evaluation metrics/model outputs.
+Hardware Interface
+Computing System:
+The system runs on a standard computer or server with:
+High-performance CPU and optional GPU (for training and inference)
+Minimum 8–16 GB RAM and sufficient storage (100+ GB)
+Software Interface
+Machine Learning Frameworks:
+PyTorch / TensorFlow for model development and training
+Transformers library for vision–language modeling
+Data Processing Libraries:
+OpenCV for image processing
+NumPy and Pandas for data handling
+Matplotlib for visualization
+Model Components:
+Vision encoder (CNN / Vision Transformer)
+Language encoder (BERT or similar models)
+Cross-modal alignment modules
+Distributionally robust optimization components
+Communication Interfaces
+Data Input Interface:
+Upload mechanism for chest X-ray images (file system or web upload)
+Optional input for clinical text data
+Output Interface:
+Display of predictions, probability scores, and confidence levels
+Visualization of evaluation metrics (F1-score, AUC, ECE, etc.)
+Protocols:
+Standard data exchange through local system interfaces or HTTP/HTTPS (if deployed as a web application)
+3.4 System Features (summary)
+Vision–language based analysis combining chest X-ray images and clinical text for improved diagnostic accuracy.
+Multi-label thoracic disease detection with probability scores for multiple conditions.
+Imbalance-aware learning using distributionally robust and long-tailed optimization techniques.
+Uncertainty-aware predictions with calibrated confidence scores for reliable clinical interpretation.
+Support for preprocessing, data augmentation, and handling of imbalanced medical datasets.
+Evaluation using clinically relevant metrics such as precision, recall, F1-score, AUC, and calibration error (ECE).
+User-friendly interface for uploading inputs and visualizing predictions and model outputs.
+Modular system design enabling easy updates, scalability, and future enhancements.
+Use case description
+991282 273682
+Fig. 1: Use Case Diagram of Vision-Language Assisted DR-ULTRA Framework for Thoracic Disease Detection.
+The Use Case Diagram represents the interaction between users and the DR-ULTRA system for thoracic disease detection. The primary actor, the clinician or researcher, interacts with the system by uploading chest X-ray images and optionally providing clinical text, after which the system preprocesses the data, performs vision–language fusion, and generates multi-label disease predictions along with confidence scores and evaluation metrics. The secondary actor, the administrator or developer, is responsible for managing datasets, training and updating the model, and monitoring system performance. This diagram highlights both user-level interactions and internal system processes required for accurate and reliable disease prediction.
+Use Case Table:
+678152 225139
+Use Case Description:
+UC-01: Data Input &amp; Upload
+Actors: Clinician/Researcher, System
+Preconditions: User has access to system interface; valid data available
+Main Flow: User uploads chest X-ray image → optionally enters clinical text → system validates input → stores data for processing
+Postconditions: Input data is ready for preprocessing
+Exceptions: Invalid file format → error message; missing input → prompt user
+Inputs: Chest X-ray image, clinical text
+Outputs: Validated input data
+Error cases: Upload failure, unsupported format, incomplete input
+UC-02: Data Preprocessing
+Actors: System
+Preconditions: Input data is available
+Main Flow: Image normalization and resizing → noise removal → text cleaning and tokenization → prepared data passed to model
+Postconditions: Clean and standardized data ready for feature extraction
+Exceptions: Corrupted data → preprocessing aborted
+Inputs: Raw image, clinical text
+Outputs: Preprocessed image and text
+Error cases: Data corruption, preprocessing failure
+UC-03: Vision–Language Fusion &amp; Prediction
+Actors: System
+Preconditions: Preprocessed data available; model loaded
+Main Flow: Image passed through vision encoder → text passed through language encoder → features fused → multi-label classification performed → probability scores generated
+Postconditions: Disease predictions generated
+Exceptions: Model inference failure → system error
+Inputs: Image features, text features
+Outputs: Predicted thoracic diseases with probabilities
+Error cases: Model crash, feature mismatch
+UC-04: Result Visualization
+Actors: Clinician/Researcher
+Preconditions: Predictions available
+Main Flow: System displays predicted diseases → shows probability scores → presents confidence/calibration metrics → user reviews results
+Postconditions: User interprets results for decision support
+Exceptions: UI failure → incomplete display
+Inputs: Model predictions
+Outputs: Visualized results (diseases, confidence, metrics)
+Error cases: Rendering issues, missing data
+UC-05: Model Training &amp; Update
+Actors: Admin/Developer
+Preconditions: Dataset available; training environment ready
+Main Flow: Admin loads dataset → applies augmentation and imbalance handling → trains model → evaluates performance → updates deployed model
+Postconditions: Improved model available for inference
+Exceptions: Training failure → retry or debug
+Inputs: Dataset, training parameters
+Outputs: Updated trained model
+Error cases: Overfitting, insufficient data, training crash
+UC-06: Performance Evaluation
+Actors: Admin/Developer, System
+Preconditions: Model predictions and ground truth available
+Main Flow: System computes metrics (Precision, Recall, F1-score, AUC, ECE) → generates evaluation report
+Postconditions: Model performance assessed
+Exceptions: Incorrect labels → inaccurate metrics
+Inputs: Predictions, ground truth Outputs: Evaluation metrics and reports Error cases: Metric computation failure
+UC-07: Data Augmentation &amp; Imbalance Handling
+Actors: System
+Preconditions: Training dataset available
+Main Flow: Apply augmentation techniques → perform long-tailed sampling → balance dataset → feed into training pipeline
+Postconditions: Improved dataset for robust learning
+Exceptions: Excessive augmentation → distorted data
+Inputs: Raw dataset
+Outputs: Balanced augmented dataset
+Error cases: Data distortion, imbalance not resolved
+UC-08: Logging &amp; Monitoring
+Actors: System, Admin/Developer
+Preconditions: System operational
+Main Flow: System logs inputs, predictions, and errors → admin monitors logs → identifies issues and improves system
+Postconditions: System performance tracked and improved
+Exceptions: Logging failure → missing records
+Inputs: System activities, predictions Outputs: Log files and monitoring reports Error cases: Storage issues, log corruption
