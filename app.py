@@ -114,7 +114,7 @@ dr_ultra_model = DRUltraImageBranch(num_classes=num_classes).to(device)
 dr_ultra_model.load_state_dict(checkpoint["model_state_dict"])
 dr_ultra_model.eval()
 
-prediction_threshold = float(checkpoint.get("threshold", 0.5))
+prediction_threshold = float(os.environ.get("PREDICTION_THRESHOLD", 0.75))
 print(f"[INFO] DR-Ultra framework loaded.")
 print(f"[INFO] Visual backbone: {checkpoint.get('visual_backbone', 'densenet121')}")
 print(f"[INFO] Model classes ({num_classes}): {disease_labels}")
