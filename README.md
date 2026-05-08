@@ -17,6 +17,7 @@ LumiScan AI is a Flask and PyTorch chest X-ray analysis web app. It lets users u
 Install these before running the project:
 
 - Python 3.10 or 3.11
+- For deployment, Python 3.11.9 is recommended
 - Git
 - pip
 - Optional: CUDA GPU drivers for faster inference

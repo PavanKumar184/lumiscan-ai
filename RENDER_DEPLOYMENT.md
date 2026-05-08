@@ -5,7 +5,8 @@ This project is prepared for Render deployment as a Python Web Service.
 ## Files Added For Render
 
 - `Procfile`: tells Render how to start the Flask app using Gunicorn.
-- `runtime.txt`: requests Python 3.11.9.
+- `.python-version`: requests Python 3.11.9.
+- `runtime.txt`: kept as a fallback Python version hint.
 - `requirements.txt`: contains the production dependencies, including CPU PyTorch.
 - `app.py`: reads Render's dynamic `PORT` environment variable.
 
@@ -42,7 +43,15 @@ This project is prepared for Render deployment as a Python Web Service.
    Start Command: gunicorn app:app --workers 1 --threads 2 --timeout 180
    ```
 
-6. Choose an instance type.
+6. Add this environment variable in Render:
+
+   ```text
+   PYTHON_VERSION=3.11.9
+   ```
+
+   This is important because Render's newer default Python version may be `3.14.x`, and the pinned PyTorch CPU wheel used by this project is not available for Python 3.14.
+
+7. Choose an instance type.
 
    Recommended:
 
@@ -52,15 +61,15 @@ This project is prepared for Render deployment as a Python Web Service.
 
    The free tier may be slow or may fail because PyTorch and the DenseNet model need memory.
 
-7. Click:
+8. Click:
 
    ```text
    Create Web Service
    ```
 
-8. Wait for Render to build and deploy.
+9. Wait for Render to build and deploy.
 
-9. After deployment, Render will provide a URL similar to:
+10. After deployment, Render will provide a URL similar to:
 
    ```text
    https://lumiscan-ai.onrender.com
@@ -82,7 +91,13 @@ Check these common issues:
 
 2. **PyTorch installation error**
 
-   Confirm `requirements.txt` contains the CPU PyTorch extra index:
+   Confirm Render is using Python 3.11.9. In the Render dashboard, set:
+
+   ```text
+   PYTHON_VERSION=3.11.9
+   ```
+
+   Also confirm `requirements.txt` contains the CPU PyTorch extra index:
 
    ```text
    --extra-index-url https://download.pytorch.org/whl/cpu
