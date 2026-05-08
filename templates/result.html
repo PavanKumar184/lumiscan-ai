@@ -57,7 +57,11 @@
             <div class="image-panel p-4 space-y-4">
               <h4 class="text-xl font-semibold border-b border-gray-200 pb-2">AI Heatmap</h4>
               <img id="gradcamImage" alt="Grad-CAM Heatmap" class="scan-image rounded-lg shadow-xl bg-gray-100" />
-              <p class="text-sm muted-copy text-center">Highlighted regions of attention</p>
+              <div id="gradcamFallback" class="gradcam-fallback hidden">
+                <i data-lucide="scan-search" class="w-8 h-8"></i>
+                <p>Heatmap disabled for this deployment to keep prediction stable.</p>
+              </div>
+              <p id="gradcamCaption" class="text-sm muted-copy text-center">Highlighted regions of attention</p>
             </div>
           </div>
 
@@ -151,7 +155,19 @@
 
     if (result && result.image_url) {
       document.getElementById('xrayImage').src = result.image_url;
-      document.getElementById('gradcamImage').src = result.gradcam_url;
+      const gradcamImage = document.getElementById('gradcamImage');
+      const gradcamFallback = document.getElementById('gradcamFallback');
+      const gradcamCaption = document.getElementById('gradcamCaption');
+      if (result.gradcam_available && result.gradcam_url) {
+        gradcamImage.src = result.gradcam_url;
+        gradcamImage.classList.remove('hidden');
+        gradcamFallback.classList.add('hidden');
+        gradcamCaption.textContent = 'Highlighted regions of attention';
+      } else {
+        gradcamImage.classList.add('hidden');
+        gradcamFallback.classList.remove('hidden');
+        gradcamCaption.textContent = 'Prediction completed without heatmap generation';
+      }
       document.getElementById('primaryResult').textContent = result.prediction_result;
       document.getElementById('explanationBox').textContent = result.explanation_text.replace(/\*\*/g, '');
 

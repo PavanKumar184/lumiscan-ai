@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, url_for
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 import torch
 from torchvision import models, transforms
 from PIL import Image
@@ -42,17 +43,28 @@ def print_prediction_metrics():
 # ============================================================
 app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app, resources={r"/predict": {"origins": ["http://127.0.0.1:5000", "http://localhost:5000"]}})
+app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
 
 UPLOAD_FOLDER = os.path.join("static", "uploads")
 GRADCAM_FOLDER = os.path.join("static", "gradcam")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(GRADCAM_FOLDER, exist_ok=True)
 
+is_render_runtime = bool(os.environ.get("RENDER") or os.environ.get("RENDER_SERVICE_ID"))
+enable_gradcam_env = os.environ.get("ENABLE_GRADCAM")
+ENABLE_GRADCAM = (
+    enable_gradcam_env.strip().lower() in {"1", "true", "yes", "on"}
+    if enable_gradcam_env is not None
+    else not is_render_runtime
+)
+
 # ============================================================
 # Device
 # ============================================================
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch.set_num_threads(int(os.environ.get("TORCH_NUM_THREADS", "1")))
 print(f"[INFO] Using device: {device}")
+print(f"[INFO] Grad-CAM enabled: {ENABLE_GRADCAM}")
 
 # ============================================================
 # Load trained DR-Ultra model
@@ -237,12 +249,16 @@ def predict():
         if not file or file.filename == "":
             raise ValueError("No file uploaded.")
 
-        filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+        safe_filename = secure_filename(file.filename)
+        if not safe_filename:
+            raise ValueError("Invalid file name.")
+
+        filepath = os.path.join(UPLOAD_FOLDER, safe_filename)
         file.save(filepath)
         print(f"[INFO] Image saved: {filepath}")
 
-        img = Image.open(filepath)
-        dr_ultra_input = dr_ultra_transform(img).unsqueeze(0).to(device)
+        with Image.open(filepath) as img:
+            dr_ultra_input = dr_ultra_transform(img).unsqueeze(0).to(device)
 
         with torch.no_grad():
             logits = dr_ultra_model(dr_ultra_input)
@@ -260,16 +276,22 @@ def predict():
         # ⭐ NEW: PRINT METRICS AFTER PREDICTION
         print_prediction_metrics()
 
-        gradcam_filename = f"gradcam_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
-        gradcam_path = os.path.join(GRADCAM_FOLDER, gradcam_filename)
+        gradcam_url = None
+        if ENABLE_GRADCAM:
+            gradcam_filename = f"gradcam_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
+            gradcam_path = os.path.join(GRADCAM_FOLDER, gradcam_filename)
 
-        _ = generate_gradcam(
-            filepath,
-            dr_ultra_model,
-            dr_ultra_model.model.features.denseblock4,
-            target_class=np.argmax(probs),
-            save_path=gradcam_path
-        )
+            gradcam_created = generate_gradcam(
+                filepath,
+                dr_ultra_model,
+                dr_ultra_model.model.features.denseblock4,
+                target_class=np.argmax(probs),
+                save_path=gradcam_path
+            )
+            if gradcam_created:
+                gradcam_url = url_for("static", filename=f"gradcam/{gradcam_filename}")
+        else:
+            print("[GRADCAM] Skipped. Set ENABLE_GRADCAM=true to enable heatmaps.")
 
         explanation_text = disease_explanations.get(
             prediction_text,
@@ -290,8 +312,9 @@ def predict():
             "prediction_result": prediction_text,
             "confidence": round(float(top_prob), 3) if prediction_text != "Normal / No abnormality detected" else None,
             "explanation_text": explanation_text,
-            "image_url": url_for("static", filename=f"uploads/{file.filename}"),
-            "gradcam_url": url_for("static", filename=f"gradcam/{gradcam_filename}"),
+            "image_url": url_for("static", filename=f"uploads/{safe_filename}"),
+            "gradcam_url": gradcam_url,
+            "gradcam_available": gradcam_url is not None,
             "imbalance_info": imbalance_info
         }
 
@@ -307,6 +330,7 @@ def predict():
             "explanation_text": f"Error: {str(e)}",
             "image_url": None,
             "gradcam_url": None,
+            "gradcam_available": False,
             "imbalance_info": {
                 "total_samples": total_samples,
                 "average_per_class": round(avg_count, 2),

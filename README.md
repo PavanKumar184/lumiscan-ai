@@ -141,6 +141,8 @@ If the app is slow on first startup, that is normal. The PyTorch checkpoint load
 
 If `torch` or `torchvision` errors appear, reinstall them using the official PyTorch command for your operating system and hardware.
 
+On small cloud instances, Grad-CAM may be disabled to avoid memory crashes. Prediction still works, but the heatmap panel will show an unavailable message. Set `ENABLE_GRADCAM=true` only on a server with enough memory.
+
 ## Medical Disclaimer
 
 This project is for educational and research demonstration purposes. The AI output should not be treated as a final medical diagnosis. Always consult qualified medical professionals for clinical interpretation.

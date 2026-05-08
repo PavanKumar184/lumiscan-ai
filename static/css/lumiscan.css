@@ -385,6 +385,29 @@ button:disabled {
     border: 1px solid var(--line);
 }
 
+.gradcam-fallback {
+    display: grid;
+    min-height: 260px;
+    place-items: center;
+    gap: 0.65rem;
+    padding: 1.25rem;
+    border-radius: 0.9rem;
+    color: var(--muted);
+    text-align: center;
+    background: #f4faf9;
+    border: 1px dashed rgba(22, 136, 122, 0.28);
+}
+
+.gradcam-fallback i {
+    color: var(--teal);
+}
+
+.gradcam-fallback p {
+    max-width: 18rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
 .image-panel,
 .diagnosis-card,
 .metric-panel {

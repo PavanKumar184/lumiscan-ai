@@ -47,9 +47,16 @@ This project is prepared for Render deployment as a Python Web Service.
 
    ```text
    PYTHON_VERSION=3.11.9
+   TORCH_NUM_THREADS=1
    ```
 
    This is important because Render's newer default Python version may be `3.14.x`, and the pinned PyTorch CPU wheel used by this project is not available for Python 3.14.
+
+   Grad-CAM heatmap generation is disabled by default on Render to avoid memory crashes during prediction. If you upgrade to a larger instance and want heatmaps online, add:
+
+   ```text
+   ENABLE_GRADCAM=true
+   ```
 
 7. Choose an instance type.
 
@@ -87,7 +94,7 @@ Check these common issues:
 
 1. **Out of memory**
 
-   Upgrade the Render instance plan.
+   Keep Grad-CAM disabled or upgrade the Render instance plan. Grad-CAM uses more memory than normal model prediction because it runs a backward pass through the CNN.
 
 2. **PyTorch installation error**
 
